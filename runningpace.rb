@@ -1,6 +1,7 @@
 puts "How many miles did you run today?"
 d = gets.chomp.to_f
-puts "How many minutes (round to the nearest whole number) did it take you to complete this run?"
+puts "How many minutes did it take you to complete this run?"
+puts "(ex: 120.75 minutes = 2 hrs 45 seconds)"
 t = gets.chomp.to_f
 pace = t/d
 puts "You ran at a #{pace} minute/mile pace."
