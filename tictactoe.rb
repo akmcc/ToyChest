@@ -3,7 +3,7 @@ class TicTacToe
 	def initialize
 	  enter_line
 	  puts "Let's play Tic Tac Toe"
-	  @first_row = [[" "], [" "], [" "]]
+	  @first_row = [[" "], [" "], [" "]] # ["X", "O", "O"]
 	  @second_row = [[" "], [" "], [" "]]
 	  @third_row = [[" "], [" "], [" "]]
 	  @play_count = 0
@@ -28,7 +28,6 @@ class TicTacToe
 
 	def space_full
 		puts "SORRY. That space has already been selected."
-		@play_count -= 1
 		player_turn
 	end
 
@@ -42,17 +41,16 @@ class TicTacToe
 
 	def assign_player_selection
 	  case @selection
-	  when "a1" then player_selection = @first_row[0]
-	  when "b1" then player_selection = @first_row[1]
-	  when "c1" then player_selection = @first_row[2]
-	  when "a2" then player_selection = @second_row[0]
-	  when "b2" then player_selection = @second_row[1]
-	  when "c2" then player_selection = @second_row[2]
-	  when "a3" then player_selection = @third_row[0]
-	  when "b3" then player_selection = @third_row[1]
-	  when "c3" then player_selection = @third_row[2]
+	  when "a1" then @first_row[0]
+	  when "b1" then @first_row[1]
+	  when "c1" then @first_row[2]
+	  when "a2" then @second_row[0]
+	  when "b2" then @second_row[1]
+	  when "c2" then @second_row[2]
+	  when "a3" then @third_row[0]
+	  when "b3" then @third_row[1]
+	  when "c3" then @third_row[2]
 	  end
-	  return player_selection
 	end
 
 	def check_if_empty
@@ -65,11 +63,7 @@ class TicTacToe
 	end
 
 	def user_mark
-	  if @play_count % 2 != 0
-	  	return ["X"]
-	  elsif @play_count % 2 == 0
-	  	return ["O"]
-	  end
+	  [get_player]
 	end
 
 	def enter_move
@@ -77,19 +71,23 @@ class TicTacToe
 		player_selection.replace(user_mark)
 	end
 
-	def player_turn
-	@play_count += 1
-	enter_line
-	if @play_count % 2 != 0
-		puts "Player 1, your move."
-	elsif @play_count % 2 == 0
-		puts "Player 2, your move."
+	def get_player
+		if @play_count % 2 == 0
+			"X"
+		elsif @play_count % 2 != 0
+			"O"
+		end
 	end
-	get_move
-	assign_player_selection
-	check_if_empty
-	check_for_winner
-	player_turn
+
+	def player_turn
+		enter_line
+		puts "Player #{get_player}, your turn."
+		get_move
+		assign_player_selection
+		check_if_empty
+		check_for_winner
+		@play_count += 1
+		player_turn
 	end
 
 	def check_for_winner
