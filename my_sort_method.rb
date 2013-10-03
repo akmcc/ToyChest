@@ -13,7 +13,9 @@ class Sorter
     end
 
     @sorted_list.unshift(@unsorted_list.max)
-    @unsorted_list.delete_at(@unsorted_list.index(@unsorted_list.max))
+    #delete_at is what allows for duplicate values to be sorted correctly
+    #rather than deleting all instances of the maximum value
+    @unsorted_list.delete_at(@unsorted_list.index(@unsorted_list.max)) 
     
     if @unsorted_list.size == 1
       @sorted_list.unshift(@unsorted_list[0])
@@ -35,10 +37,13 @@ class Sorter
       puts "#{real_sort}"
     else 
       puts "It passed!".green
+      puts "Your list sorted as:"
+      puts "#{this_sort}"
     end
   end
 
 end
 
 sort_list = Sorter.new
-sort_list.tester(3, 6, 1, 9, 5, 3, 4)
+#sort_list.tester(3, 6, 1, 9, 5, 3, 4)
+sort_list.tester("hi", "this", "is", "for", "testing", "a", "sorting", "method")
