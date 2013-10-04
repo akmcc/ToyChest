@@ -1,14 +1,11 @@
 require 'colorize'
 
 class Palindrome_checker
-  def initialize
+  
+  def my_reverse(word)
     @normal_order = []
     @reversed_order = []
     @reversed_word = ""
-  end
-
-
-  def my_reverse(word)
     word.each_char do |char|
       @normal_order.push(char)
     end
@@ -44,4 +41,5 @@ end
 
 thing = Palindrome_checker.new
 thing.check_for_palindrome("alula")
+thing.check_for_palindrome("phadahp")
 
