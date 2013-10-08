@@ -10,18 +10,30 @@ class Calculator
     end
   end
 
+  def left_of(operator)
+    (@characters.index(operator))-1
+  end
+
+  def right_of(operator)
+    (@characters.index(operator))+1
+  end
+
   def eval
     if @characters.include?("*")
-      value = (@characters[(@characters.index("*"))-1]) * (@characters[(@characters.index("*"))+1])
-      @characters[((@characters.index("*"))-1)..((@characters.index("*"))+1)] = [value]
+      value = @characters[left_of("*")] * @characters[right_of("*")]
+      @characters[left_of("*")..right_of("*")] = [value]
+
+    elsif @characters.include?("/")
+      value = @characters[left_of("/")] / @characters[right_of("/")]
+      @characters[left_of("/")..right_of("/")] = [value]
      
     elsif @characters.include?("+")
-      value = (@characters[(@characters.index("+"))-1]) + (@characters[(@characters.index("+"))+1])
-      @characters[((@characters.index("+"))-1)..((@characters.index("+"))+1)] = [value]
+      value = @characters[left_of("+")] + @characters[right_of("+")]
+      @characters[left_of("+")..right_of("+")] = [value]
      
     elsif @characters.include?("-")
-      value = (@characters[(@characters.index("-"))-1]) - (@characters[(@characters.index("-"))+1])
-      @characters[((@characters.index("-"))-1)..((@characters.index("-"))+1)] = [value]  
+      value = @characters[left_of("-")] - @characters[right_of("-")]
+      @characters[left_of("-")..right_of("-")] = [value] 
     end
     if @characters.size > 1
         eval
@@ -38,3 +50,5 @@ end
 thing = Calculator.new
 puts thing.calculate("2 * 3 * 4")
 puts thing.calculate("2 + 3 + 6 - 1")
+puts thing.calculate("2 + 3 * 7")
+puts thing.calculate("1 + 9 / 3 ")
