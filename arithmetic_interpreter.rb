@@ -1,3 +1,6 @@
+#to fix: characters in paren sectio of eval should not include the parens themselves
+######## then need to replace the whole paren element with the computed value
+
 class Calculator
   def find_characters(string)
     @characters = string.split(" ")
@@ -64,4 +67,4 @@ thing = Calculator.new
 # puts thing.calculate("2 + 3 + 6 - 1")
 # puts thing.calculate("2 + 3 * 7")
 # puts thing.calculate("1 + 99 / 3 ")
-puts thing.calculate("2 * ( 3 + 7 )")
+puts thing.calculate("2 * ( 3 + 7 )") #input has to have a space between each element or it will break everything
