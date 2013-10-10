@@ -1,6 +1,3 @@
-#to fix: characters in paren sectio of eval should not include the parens themselves
-######## then need to replace the whole paren element with the computed value
-
 class Calculator
   def find_characters(string)
     @characters = string.split(" ")
@@ -12,15 +9,18 @@ class Calculator
       end
     end
   end
+
   def left_of(operator)
     (@characters.index(operator))-1
   end
+
   def right_of(operator)
     (@characters.index(operator))+1
   end
 
   def find_matching_paren(characters)
-    paren_count = 0
+    @paren_element = characters
+    paren_count = 0 
     characters.each_with_index do |char, index|
       if char == "("
         paren_count += 1
@@ -28,17 +28,22 @@ class Calculator
         paren_count -= 1
       end
       if paren_count == 0
-        matching_paren_index = index
-        return matching_paren_index
+        @matching_paren_index = index
       end
     end 
   end
 
+  def find_subset_between_parens(characters) 
+    characters = characters[1..(@matching_paren_index-1)] 
+    characters
+  end
+
   def eval(characters)
     if characters.include?("(")
-      characters = characters[characters.index("(")..find_matching_paren(characters)] 
-        eval(characters) 
-      elsif characters.include?("*")
+      find_matching_paren(characters[ characters.index("(")..characters.index(characters.last)])
+      @characters = find_subset_between_parens(@paren_element)
+      eval(@characters)
+    elsif characters.include?("*")
         value = characters[left_of("*")] * characters[right_of("*")]
         characters[left_of("*")..right_of("*")] = [value]
       elsif characters.include?("/")
@@ -51,20 +56,22 @@ class Calculator
         value = characters[left_of("-")] - characters[right_of("-")]
         characters[left_of("-")..right_of("-")] = [value] 
       end
-      if characters.size > 1
-        eval(characters)
-      end 
-    end
-    def calculate(string)
-      find_characters(string)
-      eval(@characters)
-      @characters
-    end
+    if characters.size > 1
+      eval(characters)
+    end 
+    characters
   end
+  def calculate(string)
+    find_characters(string)
+    eval(@characters)
+    @characters
+  end
+end
 
 thing = Calculator.new
-# puts thing.calculate("20 * 30 * 40")
-# puts thing.calculate("2 + 3 + 6 - 1")
-# puts thing.calculate("2 + 3 * 7")
+ puts thing.calculate("20 * 30 * 40")
+puts thing.calculate("2 + 3 + 6 - 1")
+puts thing.calculate("2 + 3 * 7")
 # puts thing.calculate("1 + 99 / 3 ")
-puts thing.calculate("2 * ( 3 + 7 )") #input has to have a space between each element or it will break everything
+ # print thing.calculate("2 * ( 3 + 7 )") #input has to have a space between each element or it will break everything
+ # puts
