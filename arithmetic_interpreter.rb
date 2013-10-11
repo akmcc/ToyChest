@@ -10,15 +10,17 @@ class Calculator
     end
   end
 
-  def left_of(operator)
-    (@characters.index(operator))-1
-  end
+  # def left_of(operator)
+  #   (@characters.index(operator))-1
+  # end
 
-  def right_of(operator)
-    (@characters.index(operator))+1
-  end
+  # def right_of(operator)
+  #   (@characters.index(operator))+1
+  # end
 
   def find_matching_paren(characters)
+    print characters
+    puts
     @paren_element = characters
     paren_count = 0 
     characters.each_with_index do |char, index|
@@ -40,21 +42,26 @@ class Calculator
 
   def eval(characters)
     if characters.include?("(")
-      find_matching_paren(characters[ characters.index("(")..characters.index(characters.last)])
-      @characters = find_subset_between_parens(@paren_element)
-      eval(@characters)
+      print characters
+      puts
+      print characters.index(characters.last)
+      puts
+      find_matching_paren(characters[characters.index("(")..-1])
+      sub_characters = find_subset_between_parens(@paren_element)
+      value = eval(sub_characters)
+      characters[characters.index("(")..characters.index(characters.last)] = value
     elsif characters.include?("*")
-        value = characters[left_of("*")] * characters[right_of("*")]
-        characters[left_of("*")..right_of("*")] = [value]
+        value = characters[characters.index("*")-1] * characters[characters.index("*")+1]
+        characters[(characters.index("*")-1)..(characters.index("*")+1)] = [value]
       elsif characters.include?("/")
-        value = characters[left_of("/")] / characters[right_of("/")]
-        characters[left_of("/")..right_of("/")] = [value]
+        value = characters[characters.index("/")-1] / characters[characters.index("/")+1]
+        characters[(characters.index("/")-1)..(characters.index("/")+1)] = [value]
       elsif characters.include?("+")
-        value = characters[left_of("+")] + characters[right_of("+")]
-        characters[left_of("+")..right_of("+")] = [value]
+        value = characters[characters.index("+")-1] + characters[characters.index("+")+1]
+        characters[(characters.index("+")-1)..(characters.index("+")+1)] = [value]
       elsif characters.include?("-")
-        value = characters[left_of("-")] - characters[right_of("-")]
-        characters[left_of("-")..right_of("-")] = [value] 
+        value = characters[characters.index("-")-1] - characters[characters.index("-")+1]
+        characters[(characters.index("-")-1)..(characters.index("-")+1)] = [value] 
       end
     if characters.size > 1
       eval(characters)
@@ -69,9 +76,9 @@ class Calculator
 end
 
 thing = Calculator.new
- puts thing.calculate("20 * 30 * 40")
-puts thing.calculate("2 + 3 + 6 - 1")
-puts thing.calculate("2 + 3 * 7")
-# puts thing.calculate("1 + 99 / 3 ")
- # print thing.calculate("2 * ( 3 + 7 )") #input has to have a space between each element or it will break everything
- # puts
+# puts thing.calculate("20 * 30 * 40")
+# puts thing.calculate("2 + 3 + 6 - 1")
+# puts thing.calculate("2 + 3 * 7")
+#  puts thing.calculate("1 + 99 / 3 ")
+ puts thing.calculate("2 * ( 3 + 7 )") #input has to have a space between each element or it will break everything
+#puts thing. calculate("2 * ( 3 * ( 1 + 2 ) )")
