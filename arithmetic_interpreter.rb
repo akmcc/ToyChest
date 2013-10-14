@@ -2,7 +2,7 @@ class Calculator
   def find_characters(string)
     @characters = string.split(" ")
     @characters = @characters.map do |char|
-      if char.to_i != 0
+      if char.match(/\d/)
         char.to_i
       else
         char = char
@@ -19,8 +19,6 @@ class Calculator
   # end
 
   def find_matching_paren(characters)
-    print characters
-    puts
     @paren_element = characters
     paren_count = 0 
     characters.each_with_index do |char, index|
@@ -42,10 +40,6 @@ class Calculator
 
   def eval(characters)
     if characters.include?("(")
-      print characters
-      puts
-      print characters.index(characters.last)
-      puts
       find_matching_paren(characters[characters.index("(")..-1])
       sub_characters = find_subset_between_parens(@paren_element)
       value = eval(sub_characters)
