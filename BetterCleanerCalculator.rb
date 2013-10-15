@@ -5,6 +5,7 @@ class EasierCalculator
     @pre_fix = []
   end
 
+  #splits string into array of integers and strings
   def tokenize string
     characters = string.split(" ")
     characters =  characters.map do |char|
@@ -16,6 +17,7 @@ class EasierCalculator
     end
   end
 
+  #to facilitate order of operations
   def prescedence_of operator
     case operator
     when "*" then 2
@@ -26,6 +28,7 @@ class EasierCalculator
     end
   end
 
+  #shunting yard algorithm to convert infix to postfix expressions using a stack
   def convert_to_postfix characters
     characters.each do |char|
       if char.is_a? Integer
@@ -48,7 +51,7 @@ class EasierCalculator
         until @stack.last == "("
           @post_fix << @stack.pop
         end
-        @stack.pop #throw away the left paren that was stored in the stack ## does this assume I only have 1 left paren in the stack at a time? 
+        @stack.pop #throw away the left paren that was stored in the stack
       end
     end 
     until @stack.empty?
@@ -56,6 +59,9 @@ class EasierCalculator
     end 
   end
 
+  #calls evaluate to reduce expressions. 
+  #either calls evaluate on sub expression, 
+  #or pops item out of the array so it can be computed
   def reduce(variable)
     if variable.size > 1
      evaluate(variable)
@@ -64,28 +70,26 @@ class EasierCalculator
     end
   end
 
+  
   def evaluate pre_fix
-    print "prefix chars at beginning of evaluate method are: #{pre_fix}"
-    puts
+    #creates semi-nested tree-ish structure to compute
+    #right variable always becomes an array
     op, left_var, *right_var = pre_fix
     if op == "*"
-      value = left_var * reduce(right_var)
+      left_var * reduce(right_var)
     elsif op == "/"
-      value = left_var / reduce(right_var)
+      left_var / reduce(right_var)
     elsif op == "+"
-      value = left_var + reduce(right_var)
+      left_var + reduce(right_var)
     elsif op == "-"
-      value = left_var - reduce(right_var)
+      left_var - reduce(right_var)
     end
-    value
   end
 
   def calculate string
     characters = tokenize string
     convert_to_postfix characters
-    print "post_fix characters are: #{@post_fix}"
-    puts
-    @pre_fix = @post_fix.reverse #converts to prefix
+    @pre_fix = @post_fix.reverse
     evaluate @pre_fix
   end
 
