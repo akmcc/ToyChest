@@ -1,3 +1,5 @@
+require "minitest/autorun"
+
 class EasierCalculator
   def initialize
     @stack = []
@@ -29,25 +31,20 @@ class EasierCalculator
   end
 
   #shunting yard algorithm to convert infix to postfix expressions using a stack
-  def convert_to_postfix characters
-    characters.each do |char|
-      if char.is_a? Integer
-        @post_fix << char
-      elsif char == "("
-        @stack << char
-      elsif char.match(/[\*\/\+\-]/)
-        if @stack.last && @stack.last.match(/[\*\/\+\-\(\)]/) 
-          if prescedence_of(char)  <= prescedence_of(@stack.last)
-            @post_fix << @stack.pop #will I ever need to add three operators from the stack? 
-            if @stack.last && prescedence_of(char) <= prescedence_of(@stack.last) #also need to make sure the stack.last is an operator! 
-              @post_fix << @stack.pop
-            end
-          end
+  def convert_to_postfix tokens
+    tokens.each do |token|
+      if token.is_a? Integer
+        @post_fix << token
+      elsif token == "("
+        @stack << token
+      elsif token.match(/[\*\/\+\-]/)
+        while @stack.last && @stack.last.match(/[\*\/\+\-]/) && (prescedence_of(token) <= prescedence_of(@stack.last))
+          @post_fix << @stack.pop
         end
-          @stack << char
-      elsif char == "("
-        @stack << char
-      elsif char == ")"
+        @stack << token
+      elsif token == "("
+        @stack << token
+      elsif token == ")"
         until @stack.last == "("
           @post_fix << @stack.pop
         end
@@ -58,51 +55,50 @@ class EasierCalculator
       @post_fix << @stack.pop
     end 
   end
-
-  #calls evaluate to reduce expressions. 
-  #either calls evaluate on sub expression, 
-  #or pops item out of the array so it can be computed
-  def reduce(variable)
-    if variable.size > 1
-     evaluate(variable)
-    elsif variable.size == 1
-     variable.pop
-    end
-  end
-
   
-  def evaluate pre_fix
-    #creates semi-nested tree-ish structure to compute
-    #right variable always becomes an array
-    op, left_var, *right_var = pre_fix
-    if op == "*"
-      left_var * reduce(right_var)
-    elsif op == "/"
-      left_var / reduce(right_var)
-    elsif op == "+"
-      left_var + reduce(right_var)
-    elsif op == "-"
-      left_var - reduce(right_var)
+  def evaluate post_fix_expression
+    stack = []
+    while !post_fix_expression.empty? 
+      top = post_fix_expression.shift
+      if top == "*"
+        y, x = stack.pop, stack.pop
+        stack.push(x * y)
+      elsif top == "/"
+        y, x = stack.pop, stack.pop
+        stack.push(x/y)
+      elsif top == "+"
+        y, x = stack.pop, stack.pop
+        stack.push(x+y)
+      elsif top == "-"
+        y, x = stack.pop, stack.pop
+        stack.push(x-y)
+      else
+        stack.push(top)
+      end
     end
+    stack
   end
-
+  
   def calculate string
     characters = tokenize string
     convert_to_postfix characters
-    @pre_fix = @post_fix.reverse
-    evaluate @pre_fix
+    print "postfix chars before being evaluated are: #{@post_fix}"
+    evaluate @post_fix
   end
 
 end
 
-
-thing = EasierCalculator.new
-# print thing.calculate "1 + 2 + 4"
-# puts
-# print thing.calculate "7 * 2 + 4"
-# puts
-print thing.calculate "( 2 + 4 ) * 1" #program works if parens are at beginning of expression. 
-puts
-
-
-
+describe EasierCalculator do
+  it "can calculate two operators" do
+    calc = EasierCalculator.new
+    calc.calculate("1 + 2").must_equal(3)
+  end
+  it "can calculate three operators" do
+    calc = EasierCalculator.new
+    calc.calculate("15 / 3 + 4").must_equal(9)
+  end
+  it "can calculate four operators" do
+    calc = EasierCalculator.new
+    calc.calculate("1 + 2 * 3 + 4").must_equal(11)
+  end
+end
