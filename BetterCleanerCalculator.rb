@@ -2,6 +2,7 @@ class EasierCalculator
   def initialize
     @stack = []
     @post_fix = []
+    @pre_fix = []
   end
 
   def tokenize string
@@ -33,10 +34,11 @@ class EasierCalculator
         @stack << char
       elsif char.match(/[\*\/\+\-]/)
         if @stack.last && @stack.last.match(/[\*\/\+\-\(\)]/) 
-          puts prescedence_of(char)
-          puts prescedence_of(@stack.last)
-          if (prescedence_of(char) <= prescedence_of(@stack.last))
-            @post_fix << (@stack.pop) #may sometimes need to add more than one operator from the stack to the post_fix array
+          if prescedence_of(char)  <= prescedence_of(@stack.last)
+            @post_fix << @stack.pop #will I ever need to add three operators from the stack? 
+            if @stack.last && prescedence_of(char) <= prescedence_of(@stack.last) #also need to make sure the stack.last is an operator! 
+              @post_fix << @stack.pop
+            end
           end
         end
           @stack << char
@@ -44,25 +46,60 @@ class EasierCalculator
         @stack << char
       elsif char == ")"
         until @stack.last == "("
-          @post_fix << (@stack.pop)
+          @post_fix << @stack.pop
         end
-        @stack.pop #throw away the left paren that was in the stack ## does this assume I only have 1 left paren? 
+        @stack.pop #throw away the left paren that was stored in the stack ## does this assume I only have 1 left paren in the stack at a time? 
       end
     end 
     until @stack.empty?
-      @post_fix << (@stack.pop)
-      print "post_fix is #{@post_fix}"
-      puts
+      @post_fix << @stack.pop
     end 
   end
 
-
-  # def evaluate post_fix_chars
-  # end
+  def evaluate pre_fix
+    op, left_var, *right_var = pre_fix
+    if op == "*"
+      value = left_var * (  if right_var.size > 1
+                              right_var = evaluate(right_var)
+                            elsif right_var.size == 1
+                              right_var = right_var.pop
+                             end
+                             right_var
+                          ) 
+    elsif op == "/"
+      value = left_var / (  if right_var.size > 1
+                              right_var = evaluate(right_var)
+                            elsif right_var.size == 1
+                              right_var = right_var.pop
+                             end
+                             right_var
+                          )
+    elsif op == "+"
+      value = left_var + (  if right_var.size > 1
+                              right_var = evaluate(right_var)
+                            elsif right_var.size == 1
+                              right_var = right_var.pop
+                             end
+                             right_var
+                          )
+    elsif op == "-"
+      value = left_var - (  if right_var.size > 1
+                              right_var = evaluate(right_var)
+                            elsif right_var.size == 1
+                              right_var = right_var.pop
+                             end
+                             right_var
+                          )
+    end
+    value
+  end
 
   def calculate string
     characters = tokenize string
     convert_to_postfix characters
+    @pre_fix = @post_fix.reverse #converts to prefix
+    evaluate @pre_fix
+    
 
     #value = evaluate @post_fix
 
@@ -73,5 +110,12 @@ end
 
 
 thing = EasierCalculator.new
-print thing.calculate "( 2 + 7 ) * ( 2 + 1 )"
+# print thing.calculate "1 + 2 + 4"
+# puts
+# print thing.calculate "7 * 2 + 4"
+# puts
+print thing.calculate "0 * 2 + 4"
 puts
+
+
+
