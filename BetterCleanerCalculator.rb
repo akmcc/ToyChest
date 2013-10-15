@@ -56,40 +56,26 @@ class EasierCalculator
     end 
   end
 
+  def reduce(variable)
+    if variable.size > 1
+     evaluate(variable)
+    elsif variable.size == 1
+     variable.pop
+    end
+  end
+
   def evaluate pre_fix
+    print "prefix chars at beginning of evaluate method are: #{pre_fix}"
+    puts
     op, left_var, *right_var = pre_fix
     if op == "*"
-      value = left_var * (  if right_var.size > 1
-                              right_var = evaluate(right_var)
-                            elsif right_var.size == 1
-                              right_var = right_var.pop
-                             end
-                             right_var
-                          ) 
+      value = left_var * reduce(right_var)
     elsif op == "/"
-      value = left_var / (  if right_var.size > 1
-                              right_var = evaluate(right_var)
-                            elsif right_var.size == 1
-                              right_var = right_var.pop
-                             end
-                             right_var
-                          )
+      value = left_var / reduce(right_var)
     elsif op == "+"
-      value = left_var + (  if right_var.size > 1
-                              right_var = evaluate(right_var)
-                            elsif right_var.size == 1
-                              right_var = right_var.pop
-                             end
-                             right_var
-                          )
+      value = left_var + reduce(right_var)
     elsif op == "-"
-      value = left_var - (  if right_var.size > 1
-                              right_var = evaluate(right_var)
-                            elsif right_var.size == 1
-                              right_var = right_var.pop
-                             end
-                             right_var
-                          )
+      value = left_var - reduce(right_var)
     end
     value
   end
@@ -97,13 +83,10 @@ class EasierCalculator
   def calculate string
     characters = tokenize string
     convert_to_postfix characters
+    print "post_fix characters are: #{@post_fix}"
+    puts
     @pre_fix = @post_fix.reverse #converts to prefix
     evaluate @pre_fix
-    
-
-    #value = evaluate @post_fix
-
-    #will want to return value at the end
   end
 
 end
@@ -114,7 +97,7 @@ thing = EasierCalculator.new
 # puts
 # print thing.calculate "7 * 2 + 4"
 # puts
-print thing.calculate "0 * 2 + 4"
+print thing.calculate "( 2 + 4 ) * 1" #program works if parens are at beginning of expression. 
 puts
 
 
