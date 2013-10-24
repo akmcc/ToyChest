@@ -8,8 +8,7 @@ class EasierCalculator
 
   #splits string into array of integers and strings
   def tokenize string
-    blobs = string.split(" ")
-    blobs.map do |blob|
+    string.split(" ").map do |blob|
       if blob.match(/\d/)
         blob.to_i
       else
