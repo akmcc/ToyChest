@@ -8,18 +8,17 @@ class EasierCalculator
 
   #splits string into array of integers and strings
   def tokenize string
-    characters = string.split(" ")
-    characters =  characters.map do |char|
-      if char.match(/\d/)
-        char.to_i
+    string.split(" ").map do |blob|
+      if blob.match(/\d/)
+        blob.to_i
       else
-        char = char
+        blob
       end
     end
   end
 
   #to facilitate order of operations
-  def prescedence_of operator
+  def precedence_of operator
     case operator
     when "*" then 2
     when "/" then 2
@@ -36,8 +35,8 @@ class EasierCalculator
         @post_fix_expression << token
       elsif token == "("
         @operator_stack << token
-      elsif token.match(/[\*\/\+\-]/)
-        while @operator_stack.last && @operator_stack.last.match(/[\*\/\+\-]/) && (prescedence_of(token) <= prescedence_of(@operator_stack.last))
+      elsif is_op?(token)
+        while @operator_stack.last && is_op?(@operator_stack.last) && (precedence_of(token) <= precedence_of(@operator_stack.last))
           @post_fix_expression << @operator_stack.pop
         end
         @operator_stack << token
@@ -53,6 +52,10 @@ class EasierCalculator
     until @operator_stack.empty?
       @post_fix_expression << @operator_stack.pop
     end 
+  end
+
+  def is_op?(token)
+    token.match(/[\*\/\+\-]/)
   end
   
   #takes an array of tokens in post-fix notation
