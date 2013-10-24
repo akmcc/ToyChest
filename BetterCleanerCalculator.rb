@@ -9,11 +9,11 @@ class EasierCalculator
   #splits string into array of integers and strings
   def tokenize string
     blobs = string.split(" ")
-    blobs = blobs.map do |blob|
+    blobs.map do |blob|
       if blob.match(/\d/)
         blob.to_i
       else
-        blob = blob
+        blob
       end
     end
   end
