@@ -18,7 +18,7 @@ class EasierCalculator
   end
 
   #to facilitate order of operations
-  def prescedence_of operator
+  def precedence_of operator
     case operator
     when "*" then 2
     when "/" then 2
@@ -36,7 +36,7 @@ class EasierCalculator
       elsif token == "("
         @operator_stack << token
       elsif token.match(/[\*\/\+\-]/)
-        while @operator_stack.last && @operator_stack.last.match(/[\*\/\+\-]/) && (prescedence_of(token) <= prescedence_of(@operator_stack.last))
+        while @operator_stack.last && @operator_stack.last.match(/[\*\/\+\-]/) && (precedence_of(token) <= precedence_of(@operator_stack.last))
           @post_fix_expression << @operator_stack.pop
         end
         @operator_stack << token
