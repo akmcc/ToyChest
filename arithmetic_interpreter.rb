@@ -1,93 +1,109 @@
-class Calculator
-  def tokenize(string)
-    characters = string.split(" ")
-    characters = characters.map do |char|
-      if char.match(/\d/)
-        char.to_i
+require "minitest/autorun"
+
+class EasierCalculator
+  def initialize
+    @operator_stack = []
+    @post_fix_expression = []
+  end
+
+  #splits string into array of integers and strings
+  def tokenize string
+    string.split(" ").map do |blob|
+      blob.match(/\d/) ? blob.to_i : blob
+    end
+  end
+
+  #to facilitate order of operations
+  def precedence_of operator
+    case operator
+    when "*" then 2
+    when "/" then 2
+    when "+" then 1
+    when "-" then 1
+    when "(" then 0  
+    end
+  end
+
+  #shunting yard algorithm to convert infix to postfix expressions using a stack
+  def convert_to_postfix tokens
+    tokens.each do |token|
+      if token.is_a? Integer
+        @post_fix_expression << token
+      elsif token == "("
+        @operator_stack << token
+      elsif is_op?(token)
+        while @operator_stack.last && is_op?(@operator_stack.last) && (precedence_of(token) <= precedence_of(@operator_stack.last))
+          @post_fix_expression << @operator_stack.pop
+        end
+        @operator_stack << token
+      elsif token == ")"
+        until @operator_stack.last == "("
+          @post_fix_expression << @operator_stack.pop
+        end
+        @operator_stack.pop #throw away the left paren that was stored in the stack
+      end
+    end 
+    until @operator_stack.empty?
+      @post_fix_expression << @operator_stack.pop
+    end 
+  end
+
+  def is_op?(token)
+    token.match(/[\*\/\+\-]/)
+  end
+  
+  #takes an array of tokens in post-fix notation
+  def evaluate post_fix_expression
+    stack = []
+    while !post_fix_expression.empty? 
+      top = post_fix_expression.shift
+      if top == "*"
+        y, x = stack.pop, stack.pop 
+        stack.push(x * y)
+      elsif top == "/"
+        y, x = stack.pop, stack.pop
+        stack.push(x/y)
+      elsif top == "+"
+        y, x = stack.pop, stack.pop
+        stack.push(x+y)
+      elsif top == "-"
+        y, x = stack.pop, stack.pop
+        stack.push(x-y)
       else
-        char = char
+        stack.push(top)
       end
     end
-    print "in tokenize characters are: #{characters}"
-    puts
-    characters
+    stack.pop
+  end
+  
+  def calculate string
+    characters = tokenize string
+    convert_to_postfix characters
+    evaluate @post_fix_expression
   end
 
-  def left_of(operator, environment)
-    environment[environment.index(operator)-1]
-  end
-
-  def right_of(operator, environment)
-    environment[environment.index(operator)+1]
-  end
-
-  def find_matching_paren(characters)
-    paren_count = 0 
-    characters.each_with_index do |char, index|
-      if char == "("
-        paren_count += 1
-      elsif char == ")"
-        paren_count -= 1
-      end
-      if paren_count == 0
-        @matching_paren_index = index
-        break
-      end
-    end 
-     print "in find matching paren characters are: #{characters}"
-    puts
-    @matching_paren_index
-  end
-
-  def find_subset_between_parens(characters) 
-    characters = characters[1..(@matching_paren_index-1)] 
-     print "in find subset characters are: #{characters}"
-    puts
-    characters
-  end
-
-  def evaluate(characters)
-    if characters.include?("(")
-      paren_element = characters[characters.index("(")..-1]
-      find_matching_paren(paren_element)
-      sub_characters = find_subset_between_parens(paren_element)
-      value = evaluate(sub_characters)
-      print "after assigning subset to sub_characters characters are: #{characters}"
-      puts
-      print "after assigning subset to sub_characters characters.last is: #{characters.last}"
-      puts
-      characters[characters.index("(")..-1] = value #This is not what I want to be doing! Not last! 
-    elsif characters.include?("*")
-        value = left_of("*", characters) * right_of("*", characters)
-        characters[(characters.index("*")-1)..(characters.index("*")+1)] = [value]
-      elsif characters.include?("/")
-        value = value = left_of("/", characters) / right_of("/", characters)
-        characters[(characters.index("/")-1)..(characters.index("/")+1)] = [value]
-      elsif characters.include?("+")
-        value = value = left_of("+", characters) + right_of("+", characters)
-        characters[(characters.index("+")-1)..(characters.index("+")+1)] = [value]
-      elsif characters.include?("-")
-        value = value = left_of("-", characters) - right_of("-", characters)
-        characters[(characters.index("-")-1)..(characters.index("-")+1)] = [value] 
-      end
-    if characters.size > 1
-      evaluate(characters)
-    end 
-    characters
-  end
-
-
-  def calculate(string)
-    characters = tokenize(string)
-    evaluate(characters)
-    characters
-  end
 end
 
-thing = Calculator.new
-#puts thing.calculate("20 * 30 * 40")
-#puts thing.calculate("2 + 3 + 6 - 1")
-#puts thing.calculate("2 + 3 * 7")
-#puts thing.calculate("1 + 99 / 3 ")
-puts thing.calculate("2 * ( 3 + 7 )") #input has to have a space between each element or it will break everything
-puts thing. calculate("2 * ( 3 * ( 1 + 2 ) )")
+#tests
+describe EasierCalculator do
+  it "can calculate two operands" do
+    calc = EasierCalculator.new
+    calc.calculate("1 + 2").must_equal(3)
+  end
+  it "can calculate three operands" do
+    calc = EasierCalculator.new
+    calc.calculate("15 / 3 + 4").must_equal(9)
+  end
+  it "can calculate four operands" do
+    calc = EasierCalculator.new
+    calc.calculate("1 + 2 * 3 + 4").must_equal(11)
+  end
+  it "can calculate with parens" do
+    calc = EasierCalculator.new
+    calc.calculate("( 1 + 2 ) * 3").must_equal(9)
+  end
+  it "can calculate with nested parens" do
+    calc = EasierCalculator.new
+    calc.calculate("( 2 + ( 1 + 2 ) ) * 2").must_equal(10)
+  end
+end
