@@ -16,6 +16,7 @@ class EasierCalculator
   #to facilitate order of operations
   def precedence_of operator
     case operator
+    when "**" then 3
     when "*" then 2
     when "/" then 2
     when "+" then 1
@@ -60,6 +61,9 @@ class EasierCalculator
       if top == "*"
         y, x = stack.pop, stack.pop 
         stack.push(x * y)
+      elsif top == "**"
+        y, x = stack.pop, stack.pop
+        stack.push(x ** y)
       elsif top == "/"
         y, x = stack.pop, stack.pop
         stack.push(x/y)
@@ -94,9 +98,13 @@ describe EasierCalculator do
     calc = EasierCalculator.new
     calc.calculate("15 / 3 + 4").must_equal(9)
   end
+  it "can calculate exponents" do
+    calc = EasierCalculator.new
+    calc.calculate("2 ** 3").must_equal(8)
+  end
   it "can calculate four operands" do
     calc = EasierCalculator.new
-    calc.calculate("1 + 2 * 3 + 4").must_equal(11)
+    calc.calculate("1 + 2 ** 3 * 4").must_equal(33)
   end
   it "can calculate with parens" do
     calc = EasierCalculator.new
