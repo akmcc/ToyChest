@@ -1,6 +1,6 @@
 require "minitest/autorun"
 
-class EasierCalculator
+class ArithmeticInterpreter
   def initialize
     @operator_stack = []
     @post_fix_expression = []
@@ -58,21 +58,9 @@ class EasierCalculator
     stack = []
     while !post_fix_expression.empty? 
       top = post_fix_expression.shift
-      if top == "*"
-        y, x = stack.pop, stack.pop 
-        stack.push(x * y)
-      elsif top == "**"
+      if ["*", "**", "+", "-", "/"].include? top
         y, x = stack.pop, stack.pop
-        stack.push(x ** y)
-      elsif top == "/"
-        y, x = stack.pop, stack.pop
-        stack.push(x/y)
-      elsif top == "+"
-        y, x = stack.pop, stack.pop
-        stack.push(x+y)
-      elsif top == "-"
-        y, x = stack.pop, stack.pop
-        stack.push(x-y)
+        stack.push(x.send(top, y))
       else
         stack.push(top)
       end
@@ -85,33 +73,32 @@ class EasierCalculator
     convert_to_postfix characters
     evaluate @post_fix_expression
   end
-
 end
 
 #tests
-describe EasierCalculator do
+describe ArithmeticInterpreter do
   it "can calculate two operands" do
-    calc = EasierCalculator.new
-    calc.calculate("1 + 2").must_equal(3)
+    calculator = ArithmeticInterpreter.new
+    calculator.calculate("1 + 2").must_equal(3)
   end
   it "can calculate three operands" do
-    calc = EasierCalculator.new
-    calc.calculate("15 / 3 + 4").must_equal(9)
+    calculator = ArithmeticInterpreter.new
+    calculator.calculate("15 / 3 + 4").must_equal(9)
   end
   it "can calculate exponents" do
-    calc = EasierCalculator.new
-    calc.calculate("2 ** 3").must_equal(8)
+    calculator = ArithmeticInterpreter.new
+    calculator.calculate("2 ** 3").must_equal(8)
   end
   it "can calculate four operands" do
-    calc = EasierCalculator.new
-    calc.calculate("1 + 2 ** 3 * 4").must_equal(33)
+    calculator = ArithmeticInterpreter.new
+    calculator.calculate("1 + 2 ** 3 * 4").must_equal(33)
   end
   it "can calculate with parens" do
-    calc = EasierCalculator.new
-    calc.calculate("( 1 + 2 ) * 3").must_equal(9)
+    calculator = ArithmeticInterpreter.new
+    calculator.calculate("( 1 + 2 ) ** 3").must_equal(27)
   end
   it "can calculate with nested parens" do
-    calc = EasierCalculator.new
-    calc.calculate("( 2 + ( 1 + 2 ) ) * 2").must_equal(10)
+    calculator = ArithmeticInterpreter.new
+    calculator.calculate("( 2 + ( 1 + 2 ) ) * 2").must_equal(10)
   end
 end
