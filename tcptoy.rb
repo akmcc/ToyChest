@@ -20,7 +20,7 @@ class Sender
   end
 
   def create_tcp_segments
-    packets = split_into_packets_of(8, @message) 
+    packets = @message.split_into_packets_of(8) 
     packets.each_with_index do |packet, index|
       @tcp_segments[index] = packet
     end
@@ -42,14 +42,6 @@ class Sender
 
   def is_acknowledged?(header)
     @receipts.include?(header)
-  end
-
-  def split_into_packets_of(num, message)
-    packets = []
-    until message.length == 0
-      packets << message.slice!(0,num)
-    end
-    packets
   end
 
 end
@@ -93,6 +85,20 @@ class Receiver
     message
   end                 
 
+end
+
+module TCPPackets
+  def split_into_packets_of(num)
+    packets = []
+    until self.length == 0
+      packets << self.slice!(0,num)
+    end
+    packets
+  end
+end
+
+class String
+  include TCPPackets
 end
 
 sender = Sender.new
