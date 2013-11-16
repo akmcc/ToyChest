@@ -1,67 +1,46 @@
 require 'minitest/autorun'
 
-class Queue1 < Array
-  
-  undef_method :unshift
-
-  def initialize
-    @queue = []
-  end
-
-  def pop
-    self.shift
-  end
-end
-
-class Stack < Array
-  undef_method :shift, :unshift
-end
-
 class Graph
 
-  def initialize(adjacency_list, type_of_search)
-    @adjacency_list = adjacency_list
-    if type_of_search == "depth-first"
-      @storage = Stack.new
-    elsif type_of_search == "breadth-first"
-      @storage = Queue1.new
-    end
+  def initialize(neighbors)
+    @neighbors = neighbors
+    @parents = {}
   end
 
   def find_path(start, finish)
-    parents = {}
-    @storage << start
-      loop do 
-        current_node = @storage.pop
-        break if current_node == finish
-        @adjacency_list[current_node].each do |node|
-          unless (parents.include?(node) || @storage.include?(node))
-            @storage << node
-            parents[node] ||= current_node
-          end
+    storage = [start]
+    loop do 
+      current_node = storage.shift
+      break if current_node == finish
+      @neighbors[current_node].each do |node|
+        unless shortest_parent_known?(node)
+          @parents[node] = current_node
+          storage << node
         end
       end
-    trace_parents(parents, start, finish)
+    end
+    trace_parents(start, finish)
   end
 
-def trace_parents(parents, start, finish)
-  puts "beginning trace_parents"
-  puts "parents is #{parents}"
-  path = []
-  current_child = finish
-  until current_child == start
-    puts "path is #{path}"
-    path << current_child
-    current_child = parents[current_child]
+  private
+
+  def shortest_parent_known?(node)
+    @parents.include?(node)
   end
-  path << start
-  path.reverse
+
+  def trace_parents(start, finish)
+    path = []
+    current_child = finish
+    loop do
+      path.unshift(current_child)
+      break if current_child == start
+      current_child = @parents[current_child]
+    end
+    path
+  end
 end
 
-end
-
-
-##tests##
+##test##
 describe Graph do
   it "should return a path from 1 to 10 " do
    graph = { 1 => [2,4],
@@ -77,7 +56,7 @@ describe Graph do
     11 => [10],
     12 => [9]  
     }
-   g = Graph.new(graph, "breadth-first")
+   g = Graph.new(graph)
    g.find_path(1,10).must_equal [1,2,5,6,10]
  end
 end
