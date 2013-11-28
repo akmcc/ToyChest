@@ -142,17 +142,58 @@ class Variable < Struct.new(:name) #only maps variable names onto irreducible va
   end
 end
 
-class Machine < Struct.new(:expression, :environment)
+class DoNothing #does not inherit from Struct because it has no attributes and Struct.new does not allow for an empty attribute list
+  def to_s
+    "do_nothing"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+
+  def ==(other_statement)
+    other_statement.instance_of?(DoNothing)
+  end
+
+  def reducible?
+    false
+  end
+end
+
+class Assign < Struct.new(:name, :expression)
+  def to_s
+    "#{name} = #{expression}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment)
+    if expression.reducible?
+      [Assign.new(name, expression.reduce(environment)), environment ]
+    else
+      [DoNothing.new, environment.merge({ name => expression })]
+    end
+
+  end
+end
+
+class Machine < Struct.new(:statement, :environment)
   def step
-    self.expression = expression.reduce(environment) #is the self necessary?
+    self.statement, self.environment = statement.reduce(environment) #is the self necessary?
   end
 
   def run
-    while expression.reducible? #will continuosly loop until expression is no longer reducible
-      puts expression
+    while statement.reducible? #will continuosly loop until expression is no longer reducible
+      puts "#{statement}, #{environment}"
       step
     end
-    puts expression
+    puts "#{statement}, #{environment}"
   end
 end
 
