@@ -1,3 +1,5 @@
+#Operational Semantics - Small Step
+
 class Number < Struct.new(:value)
   def to_s #does not take OoOps into account
     value.to_s
@@ -133,7 +135,7 @@ class Variable < Struct.new(:name) #only maps variable names onto irreducible va
     "<<#{self}>>"
   end
 
-  def reducible? #how is this reducible? can be reduced to the value/expression it represents.
+  def reducible? #can be reduced to the value/expression it represents.
     true
   end
 
@@ -183,13 +185,82 @@ class Assign < Struct.new(:name, :expression)
   end
 end
 
+class If < Struct.new(:condition, :consequence, :alternative)
+  def to_s
+    "if (#{condition}) { #{consequence} } else { #{alternative} }"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment) 
+    if condition.reducible?
+      [If.new(condition.reduce(environment), consequence, alternative), environment]
+    else
+      case condition
+      when Boolean.new(true)
+        [consequence, environment]
+      when Boolean.new(false)
+        [alternative, environment]
+      end
+    end
+  end
+end
+
+class Sequence < Struct.new(:first, :second)
+  def to_s
+    "#{first}; #{second}"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment)
+    case first
+    when DoNothing.new
+      [second, environment]
+    else
+      reduced_first, reduced_environment = first.reduce(environment)
+      [Sequence.new(reduced_first, second), reduced_environment]
+    end
+  end
+end
+
+class While < Struct.new(:condition, :body)
+  def to_s
+    "while (#{condition}) { #{body} }"
+  end
+
+  def inspect
+    "<<#{self}>>"
+  end
+
+  def reducible?
+    true
+  end
+
+  def reduce(environment)
+    [If.new(condition, Sequence.new(body, self), DoNothing.new), environment] #creates the sequence because it needs to know the know the environment so it can update it to avoid infinite loop (I think that's why we're creation the sequence)
+  end
+end
+
 class Machine < Struct.new(:statement, :environment)
   def step
     self.statement, self.environment = statement.reduce(environment) #is the self necessary?
   end
 
   def run
-    while statement.reducible? #will continuosly loop until expression is no longer reducible
+    while statement.reducible? 
       puts "#{statement}, #{environment}"
       step
     end
