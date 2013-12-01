@@ -1,4 +1,4 @@
-#Operational Semantics - Small Step
+#code from Understanding Computation by Tom Stuart
 
 class Number < Struct.new(:value)
   def to_s #does not take OoOps into account
@@ -11,6 +11,10 @@ class Number < Struct.new(:value)
 
   def reducible?
     false
+  end
+
+  def evaluate(environment) #big step operational semantics
+    self
   end
 end
 
@@ -27,7 +31,7 @@ class Add < Struct.new(:left, :right)
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
     if left.reducible?
       Add.new(left.reduce(environment), right)
     elsif right.reducible?
@@ -35,7 +39,10 @@ class Add < Struct.new(:left, :right)
     else
       Number.new(left.value + right.value)
     end
+  end
 
+  def evaluate(environment) #big step operational semantics
+    Number.new(left.evaluate(environment).value + right.evaluate(environment).value)  
   end
 end
 
@@ -52,7 +59,7 @@ class Multiply < Struct.new(:left, :right)
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
     if left.reducible?
       Multiply.new(left.reduce(environment), right)
     elsif right.reducible?
@@ -60,6 +67,10 @@ class Multiply < Struct.new(:left, :right)
     else
       Number.new(left.value * right.value)
     end
+  end
+
+  def evaluate(environment) #big step operational semantics
+    Number.new(left.evaluate(environment).value * right.evaluate(environment).value)  
   end
 end
 
@@ -76,6 +87,10 @@ class Boolean < Struct.new(:value)
   def reducible?
     false
   end
+
+  def evaluate(environment) #big step operational semantics
+    self  
+  end
 end
 
 class LessThan < Struct.new(:left, :right)
@@ -91,7 +106,7 @@ class LessThan < Struct.new(:left, :right)
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
     if left.reducible?
       LessThan.new(left.reduce(environment), right)
     elsif right.reducible?
@@ -99,6 +114,10 @@ class LessThan < Struct.new(:left, :right)
     else
       Boolean.new(left.value < right.value)
     end
+  end
+
+  def evaluate(environment) #big step operational semantics
+    Boolean.new(left.evaluate(environment).value < right.evaluate(environment).value)  
   end
 end
 
@@ -115,7 +134,7 @@ class GreaterThan < Struct.new(:left, :right)
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
     if left.reducible?
       GreaterThan.new(left.reduce(environment), right)
     elsif right.reducible?
@@ -123,6 +142,10 @@ class GreaterThan < Struct.new(:left, :right)
     else
       Boolean.new(left.value > right.value)
     end
+  end
+
+  def evaluate(environment) #big step operational semantics
+    Boolean.new(left.evaluate(environment).value > right.evaluate(environment).value)  
   end
 end
 
@@ -139,7 +162,11 @@ class Variable < Struct.new(:name) #only maps variable names onto irreducible va
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
+    environment[name]
+  end
+
+  def evaluate(environment) #big step operational semantics
     environment[name]
   end
 end
@@ -160,6 +187,10 @@ class DoNothing #does not inherit from Struct because it has no attributes and S
   def reducible?
     false
   end
+
+  def evaluate(environment) #big step operational semantics
+    environment
+  end
 end
 
 class Assign < Struct.new(:name, :expression)
@@ -175,13 +206,16 @@ class Assign < Struct.new(:name, :expression)
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
     if expression.reducible?
       [Assign.new(name, expression.reduce(environment)), environment ]
     else
       [DoNothing.new, environment.merge({ name => expression })]
     end
+  end
 
+  def evaluate(environment) #big step operational semantics
+    environment.merge({name => expression.evaluate(environment)})
   end
 end
 
@@ -198,7 +232,7 @@ class If < Struct.new(:condition, :consequence, :alternative)
     true
   end
 
-  def reduce(environment) 
+  def reduce(environment) #small step operational semantics
     if condition.reducible?
       [If.new(condition.reduce(environment), consequence, alternative), environment]
     else
@@ -208,6 +242,15 @@ class If < Struct.new(:condition, :consequence, :alternative)
       when Boolean.new(false)
         [alternative, environment]
       end
+    end
+  end
+
+  def evaluate(environment) #big step operational semantics
+    case conditional.evaluate(environment)
+    when Boolean.new(true)
+      consequence.evaluate(environment)
+    when Boolean.new(false)
+      alternative.evaluate(environment)
     end
   end
 end
@@ -225,7 +268,7 @@ class Sequence < Struct.new(:first, :second)
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
     case first
     when DoNothing.new
       [second, environment]
@@ -233,6 +276,10 @@ class Sequence < Struct.new(:first, :second)
       reduced_first, reduced_environment = first.reduce(environment)
       [Sequence.new(reduced_first, second), reduced_environment]
     end
+  end
+
+  def evaluate(environment)
+    second.evaluate(first.evaluate(environment))
   end
 end
 
@@ -249,12 +296,21 @@ class While < Struct.new(:condition, :body)
     true
   end
 
-  def reduce(environment)
+  def reduce(environment) #small step operational semantics
     [If.new(condition, Sequence.new(body, self), DoNothing.new), environment] #creates the sequence because it needs to know the know the environment so it can update it to avoid infinite loop (I think that's why we're creation the sequence)
+  end
+
+  def evaluate(environment) #big step operational semantics
+    case condition.evaluate(environment)
+    when Boolean.new(true)
+      evaluate(body.evaluate(environment))
+    when Boolean.new(false)
+      environment
+    end
   end
 end
 
-class Machine < Struct.new(:statement, :environment)
+class Machine < Struct.new(:statement, :environment) #used for small-step reduction
   def step
     self.statement, self.environment = statement.reduce(environment) #is the self necessary?
   end
