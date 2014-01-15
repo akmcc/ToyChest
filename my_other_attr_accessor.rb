@@ -1,3 +1,5 @@
+#classes subclasses from MyClass will have access to my_attr_accessor
+
 class MyClass
 
   def self.my_attr_writer(*names)
@@ -19,8 +21,4 @@ class MyClass
     end
   end
 
-end
-
-class MySubClass < MyClass
-  my_attr_accessor :name, :location
 end

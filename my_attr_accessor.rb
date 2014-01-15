@@ -13,7 +13,7 @@ class MyClass
 def self.my_attr_reader(*names)
   names.each do |name|
     define_method("#{name}") do
-      eval("@#{name}")
+      instance_variable_get("@#{name}")
     end
   end
 end

@@ -55,6 +55,8 @@ class Xor < Struct.new(:left, :right)
   end
 end
 
+#selector decided which output is given
+# if selector is 0, left is output, if selector is 1, right is output
 class Multiplexor < Struct.new(:left, :right, :selector)
   def run
     not_right = Not.new(right).run
@@ -208,6 +210,7 @@ describe 'Multiplexor' do
 
   # 000 means left is zero right is zero and selector is zero
   # 101 means left is one right is zero and selector is one 
+  # 100 means left is one right os zero and selector is zero
  
   it "should return 0 with 000" do
     result = Multiplexor.new(Binary.new(0), Binary.new(0), Binary.new(0)).run
